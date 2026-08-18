@@ -1,0 +1,15 @@
+{
+  "name": "conti-di-casa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App Conti di Casa - frontend statico + Netlify Functions con Netlify Blobs come storage",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}

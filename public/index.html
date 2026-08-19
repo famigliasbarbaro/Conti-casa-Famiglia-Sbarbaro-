@@ -1,253 +1,1737 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Spese</title>
-    <!-- Libreria Chart.js per il grafico a torta -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Stili generali e di navigazione a pagine (Tab) */
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 10px;
-        }
-        .nav-btn {
-            background: #e2e8f0;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            color: #64748b;
-            transition: all 0.2s;
-        }
-        .nav-btn.active {
-            background: #10b981;
-            color: white;
-        }
-        .page-section {
-            display: none;
-        }
-        .page-section.active {
-            display: block;
-        }
-
-        /* Stili dedicati alla Pagina Statistiche & Budget */
-        .stat-page-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-        .budget-input-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .budget-input-group input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        .budget-btn {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .budget-btn-danger {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .progress-bar-bg {
-            background: #edf2f7;
-            border-radius: 8px;
-            height: 14px;
-            overflow: hidden;
-            margin-top: 12px;
-        }
-        .progress-bar-fill {
-            background: #10b981;
-            height: 100%;
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conti di Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7EF;
+    --paper-line:#E4DCC9;
+    --ink:#233231;
+    --ink-soft:#5C6B69;
+    --ledger:#1F3A3D;
+    --ledger-light:#2E4E51;
+    --credit:#4B7A5B;
+    --credit-bg:#E7EFE4;
+    --debit:#A6432D;
+    --debit-bg:#F5E5DF;
+    --gold:#B8892B;
+    --card:#FFFFFF;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px);
+    background-size: 100% 42px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    padding-bottom:60px;
+  }
+  header{
+    background:var(--ledger);
+    color:#F4EEDF;
+    padding:28px 20px 22px;
+    background-image: linear-gradient(180deg, var(--ledger), var(--ledger-light));
+    border-bottom:4px solid var(--gold);
+  }
+  header h1{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:clamp(26px,4vw,36px);
+    margin:0 0 4px 0;
+    letter-spacing:0.3px;
+  }
+  header p{
+    margin:0;
+    font-size:14px;
+    opacity:0.8;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 16px;}
+  nav.tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:2px;
+    margin-top:22px;
+    max-width:920px;
+    margin-left:auto;
+    margin-right:auto;
+    padding:0 16px;
+  }
+  nav.tabs button{
+    flex:1 1 130px;
+    padding:12px 8px;
+    border:none;
+    background:var(--card);
+    color:var(--ink-soft);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    border-top:3px solid transparent;
+    box-shadow:0 1px 0 var(--paper-line);
+    transition:all .15s;
+  }
+  nav.tabs button.active{
+    color:var(--ledger);
+    border-top:3px solid var(--gold);
+    background:#fff;
+  }
+  main{max-width:920px;margin:0 auto;padding:20px 16px 40px;}
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(31,58,61,0.08), 0 1px 2px rgba(31,58,61,0.06);
+    border:1px solid var(--paper-line);
+  }
+  .card h2{
+    font-family:'Fraunces',serif;
+    font-size:19px;
+    margin:0 0 14px 0;
+    color:var(--ledger);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .field{flex:1;min-width:140px;display:flex;flex-direction:column;gap:5px;}
+  label{font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.4px;}
+  input, select, textarea{
+    border:1px solid var(--paper-line);
+    background:#FEFDFA;
+    border-radius:6px;
+    padding:9px 10px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  input:focus, select:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  input[type=number]{font-family:'JetBrains Mono',monospace;}
+  .btn{
+    background:var(--ledger);
+    color:#F4EEDF;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .btn:hover{background:var(--ledger-light);}
+  .btn.secondary{background:transparent;color:var(--ledger);border:1px solid var(--ledger);}
+  .btn.danger{background:transparent;color:var(--debit);border:1px solid var(--debit);padding:5px 10px;font-size:12px;}
+  .btn.small{padding:5px 10px;font-size:12px;}
+  .split-editor{background:var(--paper);border:1px dashed var(--paper-line);border-radius:6px;padding:12px;margin-top:4px;}
+  .split-editor .person-split{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .split-editor .person-split label{flex:1;text-transform:none;font-weight:500;font-size:13px;}
+  .split-editor input{width:70px;}
+  .split-sum{font-size:12px;font-family:'JetBrains Mono',monospace;margin-top:6px;}
+  .split-sum.ok{color:var(--credit);}
+  .split-sum.bad{color:var(--debit);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    text-align:left;
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    color:var(--ink-soft);
+    padding:8px 8px;
+    border-bottom:2px solid var(--ledger);
+  }
+  td{padding:9px 8px;border-bottom:1px solid var(--paper-line);vertical-align:top;}
+  td.num, th.num{text-align:right;font-family:'JetBrains Mono',monospace;}
+  tr:hover td{background:#FAF7EE;}
+  .pill{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+    background:var(--paper-line);
+    color:var(--ink-soft);
+  }
+  .pill-income{background:var(--credit-bg);color:var(--credit);}
+  .pill-expense{background:var(--debit-bg);color:var(--debit);}
+  .month-nav{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:16px;}
+  .month-nav .month-label{font-family:'Fraunces',serif;font-size:22px;color:var(--ledger);font-weight:600;text-transform:capitalize;}
+  .month-nav button{background:none;border:1px solid var(--paper-line);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:16px;color:var(--ledger);}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px;}
+  .stat{background:var(--paper);border-radius:8px;padding:12px 14px;border:1px solid var(--paper-line);}
+  .stat .label{font-size:11px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.4px;margin-bottom:4px;}
+  .stat .value{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;color:var(--ledger);}
+  .stat.clickable-stat{cursor:pointer;}
+  .stat.clickable-stat:hover{filter:brightness(0.97);}
+  .settle-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 16px;
+    border-radius:8px;
+    margin-bottom:10px;
+    border:1px solid var(--paper-line);
+  }
+  .settle-row .who{font-weight:700;font-family:'Fraunces',serif;font-size:17px;}
+  .settle-row .detail{font-size:12px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;}
+  .settle-row .amount{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;}
+  .settle-row.debit{background:var(--debit-bg);}
+  .settle-row.debit .amount{color:var(--debit);}
+  .settle-row.credit{background:var(--credit-bg);}
+  .settle-row.credit .amount{color:var(--credit);}
+  .settle-row.zero{background:var(--paper);}
+  .empty{text-align:center;padding:40px 20px;color:var(--ink-soft);font-style:italic;}
+  .helper{font-size:12px;color:var(--ink-soft);margin-top:-8px;margin-bottom:10px;}
+  .settings-people{display:flex;flex-direction:column;gap:10px;}
+  .settings-people .p-row{display:flex;gap:8px;align-items:center;}
+  .settings-people .p-row input[type=text]{flex:2;}
+  .settings-people .p-row input[type=number]{flex:1;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ledger);color:#F4EEDF;padding:10px 20px;border-radius:6px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;}
+  .toast.show{opacity:1;}
+  .settle-item{margin-bottom:10px;}
+  .settle-item .settle-row{margin-bottom:0;flex-wrap:wrap;gap:8px;}
+  .settle-row.clickable{cursor:pointer;}
+  .settle-row.clickable:hover{filter:brightness(0.97);}
+  .caret{font-size:11px;color:var(--ink-soft);margin-left:6px;}
+  .person-detail-wrap{background:#fff;border:1px solid var(--paper-line);border-top:none;border-radius:0 0 8px 8px;padding:10px 12px 14px;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .copybox{white-space:pre-wrap;font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--paper);border:1px solid var(--paper-line);border-radius:6px;padding:12px;margin-top:10px;}
+  .view-toggle{display:inline-flex;border:1px solid var(--ledger);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+  .view-toggle button{border:none;background:#fff;color:var(--ledger);padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+  .view-toggle button.active{background:var(--ledger);color:#F4EEDF;}
+  .btn.tiny{padding:3px 8px;font-size:11px;}
+  .pregresso-card{border:1px dashed var(--gold);background:#FBF3E1;border-radius:8px;padding:12px 14px;margin-bottom:10px;}
+  .pregresso-card .who{font-weight:700;font-family:'Fraunces',serif;font-size:15px;color:var(--ledger);}
+  .pregresso-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;}
+  .pregresso-badge.debito{background:var(--debit-bg);color:var(--debit);}
+  .pregresso-badge.credito{background:var(--credit-bg);color:var(--credit);}
+  .breakdown-line{font-size:13px;color:var(--ink-soft);margin:2px 0;}
+  .breakdown-line b{color:var(--ink);}
+  .inline-form{background:var(--paper);border:1px solid var(--paper-line);border-radius:8px;padding:14px;margin-bottom:14px;}
+  @media (max-width:520px){
+    nav.tabs button{font-size:10.5px;padding:10px 3px;flex:1 1 30%;}
+    .settle-row{padding:12px;}
+    .settle-row .who{font-size:15px;}
+    .settle-row .amount{font-size:16px;}
+    table{font-size:12px;}
+    th, td{padding:7px 5px;}
+  }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Menu di navigazione tra le pagine -->
-        <div class="nav-tabs">
-            <button class="nav-btn active" onclick="cambiaPagina('spese', this)">Gestione Spese</button>
-            <button class="nav-btn" onclick="cambiaPagina('statistiche', this)">Statistiche & Budget</button>
+<header>
+  <div class="wrap">
+    <h1>Conti di Casa</h1>
+    <p id="subtitle">spese, entrate &amp; conto famiglia</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="add" class="active">+ Movimento</button>
+  <button data-tab="list">Elenco</button>
+  <button data-tab="settle">Mensile</button>
+  <button data-tab="overall">Situazione</button>
+  <button data-tab="accounts">Conto corrente</button>
+  <button data-tab="settings">Impostazioni</button>
+</nav>
+
+<main>
+
+  <!-- ADD / EDIT MOVEMENT -->
+  <section id="tab-add">
+    <div class="card">
+      <h2>Nuovo movimento</h2>
+      <div class="row">
+        <div class="field">
+          <label>Tipo movimento</label>
+          <select id="m-type">
+            <option value="expense">Spesa</option>
+            <option value="income">Entrata</option>
+          </select>
         </div>
+      </div>
 
-        <!-- ================= PAGINA 1: SPESE (Il tuo codice originale intatto) ================= -->
-        <div id="pagina-spese" class="page-section active">
-            <h1>Le Mie Spese</h1>
-            <div style="background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
-                <p>Qui rimangono intatte tutte le tue funzioni originali, i moduli di inserimento e la lista dei movimenti collegata al database.</p>
-                <!-- Esempio di elemento originale preservato -->
-                <div id="lista-movimenti-originale">
-                    <!-- I tuoi dati originali continueranno a popolare questo spazio -->
-                </div>
-            </div>
+      <!-- EXPENSE FIELDS -->
+      <div id="expense-fields">
+        <div class="row">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="f-date">
+          </div>
+          <div class="field">
+            <label>Categoria</label>
+            <select id="f-category"></select>
+          </div>
+          <div class="field">
+            <label>Importo (€)</label>
+            <input type="number" id="f-amount" step="0.01" min="0" placeholder="0.00">
+          </div>
         </div>
-
-        <!-- ================= PAGINA 2: STATISTICHE & BUDGET (Pagina dedicata) ================= -->
-        <div id="pagina-statistiche" class="page-section">
-            <h1>Statistiche & Controllo Budget</h1>
-
-            <!-- Sezione Contatore & Limite Budget -->
-            <div class="stat-page-card">
-                <h3 style="margin-top: 0;">Imposta o Modifica Budget Mensile</h3>
-                <p style="color: #64748b; font-size: 14px;">Inserisci il limite massimo di spesa che desideri impostare per questo mese, oppure azzeralo.</p>
-                
-                <div class="budget-input-group">
-                    <input type="number" id="input-nuovo-budget" placeholder="Es. 1000" min="0" step="50">
-                    <button class="budget-btn" onclick="salvaBudget()">Salva Budget</button>
-                    <button class="budget-btn-danger" onclick="azzeraBudget()">Azzera</button>
-                </div>
-
-                <div style="margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-                    <p style="font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">
-                        Speso: <span id="stat-speso-totale">€ 0,00</span> / Budget: <span id="stat-budget-limite">€ 0,00</span>
-                    </p>
-                    <div class="progress-bar-bg">
-                        <div id="stat-barra-progresso" class="progress-bar-fill"></div>
-                    </div>
-                    <p id="stat-testo-rimanente" style="font-size: 14px; color: #64748b; margin-top: 10px;"></p>
-                </div>
-            </div>
-
-            <!-- Sezione Grafico a Torta Voci di Spesa -->
-            <div class="stat-page-card">
-                <h3 style="margin-top: 0;">Ripartizione Percentuale per Categoria</h3>
-                <div style="width: 100%; max-width: 300px; height: 300px; margin: 0 auto; position: relative;">
-                    <canvas id="canvasGraficoTorta"></canvas>
-                </div>
-            </div>
+        <div class="row">
+          <div class="field" style="flex:2">
+            <label>Descrizione (opzionale)</label>
+            <input type="text" id="f-desc" placeholder="es. Esselunga, bolletta luce...">
+          </div>
+          <div class="field">
+            <label>Pagata da</label>
+            <select id="f-paidby"></select>
+          </div>
         </div>
+        <div class="row">
+          <div class="field">
+            <label>Come si divide</label>
+            <select id="f-splittype">
+              <option value="quota3">Quote standard (3 persone)</option>
+              <option value="quota4">Divisa su 4 (tasse/abbonamenti)</option>
+              <option value="custom">Personalizzata (es. consumo auto)</option>
+            </select>
+          </div>
+        </div>
+        <div id="split-editor-wrap"></div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn secondary" id="btn-mutuo">Precompila Mutuo (754€)</button>
+          <button class="btn secondary" id="btn-tasse1">Tasse 1 (85€)</button>
+          <button class="btn secondary" id="btn-tasse2">Tasse 2 (435€)</button>
+          <button class="btn secondary" id="btn-pannelli">Pannelli e depuratore (285€)</button>
+        </div>
+      </div>
+
+      <!-- INCOME FIELDS -->
+      <div id="income-fields" style="display:none">
+        <div class="row">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="i-date">
+          </div>
+          <div class="field">
+            <label>Categoria</label>
+            <select id="i-category"></select>
+          </div>
+          <div class="field">
+            <label>Importo (€)</label>
+            <input type="number" id="i-amount" step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:2">
+            <label>Descrizione (opzionale)</label>
+            <input type="text" id="i-desc" placeholder="es. Conguaglio agosto...">
+          </div>
+          <div class="field">
+            <label>Conto di destinazione</label>
+            <select id="i-destaccount"></select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field" id="i-person-wrap">
+            <label id="i-person-label">Versato da</label>
+            <select id="i-person"></select>
+          </div>
+        </div>
+        <p class="helper" style="margin-top:-4px">Il campo "Versato da" è obbligatorio per "Anticipati", "Conguaglio" e "Rata mensile": indica CHI ha versato i soldi, mentre "Conto di destinazione" indica DOVE sono arrivati.<br>
+        <b>Anticipati</b>: soldi versati perché il conto non aveva abbastanza disponibilità — incidono sia sul Mensile che sulla Situazione.<br>
+        <b>Conguaglio</b>: versamento che salda un debito pregresso/accumulato — incide solo sulla pagina <b>Situazione</b>, non sul riepilogo Mensile.<br>
+        <b>Altro</b>: guadagno puro della casa (es. rimborso, regalo) — non incide su nessuna posizione individuale, è solo un'entrata del conto.<br>
+        <b>Rata mensile</b>: contributo fisso mensile della persona alle spese di casa — incide sia sul Mensile che sulla Situazione.</p>
+      </div>
+
+      <div class="row" style="margin-top:6px">
+        <button class="btn" id="btn-save-movement">Salva</button>
+        <button class="btn secondary" id="btn-cancel-edit" style="display:none">Annulla modifica</button>
+      </div>
     </div>
+  </section>
 
-    <script>
-        // Funzione per gestire il cambio pagina tramite tab pulite
-        function cambiaPagina(idPagina, elementoBtn) {
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById('pagina-' + idPagina).classList.add('active');
-            elementoBtn.classList.add('active');
+  <!-- LIST -->
+  <section id="tab-list" style="display:none">
+    <div class="card">
+      <div class="month-nav">
+        <button id="list-prev">&larr;</button>
+        <div class="month-label" id="list-month-label">-</div>
+        <button id="list-next">&rarr;</button>
+      </div>
+      <div class="row" style="margin-bottom:14px">
+        <div class="field">
+          <label>Tipo</label>
+          <select id="list-type-filter"></select>
+        </div>
+        <div class="field">
+          <label>Filtra per categoria</label>
+          <select id="list-category-filter"></select>
+        </div>
+      </div>
+      <div id="list-table-wrap"></div>
+    </div>
+  </section>
 
-            // Se l'utente apre la pagina statistiche, aggiorna i dati del grafico
-            if(idPagina === 'statistiche') {
-                aggiornaVistaStatistiche();
-            }
-        }
+  <!-- SETTLEMENT (monthly) -->
+  <section id="tab-settle" style="display:none">
+    <div class="card">
+      <div class="month-nav">
+        <button id="settle-prev">&larr;</button>
+        <div class="month-label" id="settle-month-label">-</div>
+        <button id="settle-next">&rarr;</button>
+      </div>
+      <div class="summary-grid" id="settle-stats"></div>
+    </div>
+    <div class="card">
+      <h2>Chi deve dare / ricevere</h2>
+      <p class="helper">Saldo del <b>solo mese selezionato</b>: NON viene riportato alcun debito/credito da un mese all'altro — ogni mese riparte da zero, considerando solo le spese, gli "Anticipati" e le "Rate mensili" registrati in quel mese. I movimenti di tipo <b>Conguaglio</b> sono visibili qui ma NON vengono conteggiati in questo saldo, e la <b>posizione pregressa</b> qui non viene mostrata né conteggiata: la situazione cumulativa vive solo nella pagina <b>Situazione</b>. Positivo = deve ancora versare. Negativo = è a credito (solo per la parte che supera il debito).</p>
+      <div id="settle-rows"></div>
+      <button class="btn secondary small" id="btn-copy-summary" style="margin-top:6px">Copia riepilogo (testo)</button>
+      <div id="copy-output"></div>
+    </div>
+    <div class="card">
+      <h2>Dettaglio per categoria (spese)</h2>
+      <div id="settle-by-cat"></div>
+    </div>
+  </section>
 
-        // --- Logica Budget e Statistiche ---
-        let budgetCorrente = localStorage.getItem('MioBudgetMensile') ? parseFloat(localStorage.getItem('MioBudgetMensile')) : 1000;
-        let spesaAttualeFittizia = 450; // Sostituisci questo valore con il totale calcolato dalle tue funzioni originali
+  <!-- OVERALL -->
+  <section id="tab-overall" style="display:none">
+    <div class="card">
+      <h2>Situazione complessiva</h2>
+      <p class="helper">Vista cumulativa su TUTTE le spese e le entrate registrate, indipendentemente dal mese. Qui — e solo qui — i <b>Conguagli</b> vengono conteggiati per saldare il debito accumulato, insieme agli <b>Anticipati</b>, alle <b>Rate mensili</b> e alla posizione pregressa. L'"Altro" non incide mai sulla posizione individuale. Clicca su una persona o su un conto per vedere il dettaglio.</p>
+      <div class="summary-grid" id="overall-stats"></div>
+    </div>
+    <div id="overall-account-detail-wrap"></div>
+    <div class="card">
+      <h2>Saldo cumulativo per persona</h2>
+      <div id="overall-rows"></div>
+    </div>
+    <div class="card">
+      <h2>Debito/credito pregresso</h2>
+      <p class="helper">Situazione economica esistente PRIMA dei movimenti registrati nell'app (es. "Manu aveva già un debito di €300"). Non genera movimenti nei conti di casa: è solo una voce di partenza della situazione individuale, visibile e conteggiata qui.</p>
+      <button class="btn secondary small" id="btn-add-pregresso">+ Aggiungi debito/credito pregresso</button>
+      <div id="pregresso-form-wrap"></div>
+      <div id="pregresso-rows" style="margin-top:14px"></div>
+    </div>
+  </section>
 
-        function aggiornaVistaStatistiche() {
-            document.getElementById('input-nuovo-budget').value = budgetCorrente > 0 ? budgetCorrente : '';
-            document.getElementById('stat-budget-limite').innerText = '€ ' + budgetCorrente.toFixed(2);
-            document.getElementById('stat-speso-totale').innerText = '€ ' + spesaAttualeFittizia.toFixed(2);
+  <!-- ACCOUNTS -->
+  <section id="tab-accounts" style="display:none">
+    <div class="card">
+      <h2>Conto Famiglia CC</h2>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="max-width:200px">
+          <label>Saldo iniziale (€)</label>
+          <input type="number" id="acc-cc-initial-input" step="0.01">
+        </div>
+        <button class="btn secondary small" id="btn-save-cc-initial">Salva saldo iniziale</button>
+      </div>
+      <p class="helper">Il saldo iniziale non è una entrata: è solo la base di partenza del calcolo e non compare nell'elenco movimenti.</p>
+      <div class="view-toggle" data-acc-toggle="famiglia">
+        <button data-mode="totale">Totale</button>
+        <button data-mode="mensile">Mensile</button>
+      </div>
+      <div id="acc-cc-body"></div>
+    </div>
+    <div class="card">
+      <h2>Conto Famiglia Contanti</h2>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="max-width:200px">
+          <label>Saldo iniziale (€)</label>
+          <input type="number" id="acc-cash-initial-input" step="0.01">
+        </div>
+        <button class="btn secondary small" id="btn-save-cash-initial">Salva saldo iniziale</button>
+      </div>
+      <p class="helper">Rappresenta la cassa comune fisica ("Contanti Casa"). Anche qui il saldo iniziale non è una entrata.</p>
+      <div class="view-toggle" data-acc-toggle="contanti_casa">
+        <button data-mode="totale">Totale</button>
+        <button data-mode="mensile">Mensile</button>
+      </div>
+      <div id="acc-cash-body"></div>
+    </div>
+  </section>
 
-            let percentuale = budgetCorrente > 0 ? (spesaAttualeFittizia / budgetCorrente) * 100 : 0;
-            if (percentuale > 100) percentuale = 100;
+  <!-- SETTINGS -->
+  <section id="tab-settings" style="display:none">
+    <div class="card">
+      <h2>Persone e quote</h2>
+      <p class="helper">Le prime 3 sono i conviventi con quota fissa. La 4ª ("esterno") entra in gioco solo nelle spese "divise su 4" o in entrate/conguagli specifici.</p>
+      <div class="settings-people" id="people-editor"></div>
+      <button class="btn secondary small" id="btn-save-people" style="margin-top:10px">Salva persone</button>
+    </div>
+    <div class="card">
+      <h2>Dati</h2>
+      <p class="helper">Tutti i dati sono salvati automaticamente nel tuo account (privati, non condivisi).</p>
+      <div class="row">
+        <button class="btn secondary" id="btn-export-csv">Esporta CSV (Unico file)</button>
+        <button class="btn secondary" id="btn-export-xlsx">Esporta Excel (Multi-foglio)</button>
+      </div>
+      <p class="helper" style="margin-top:8px">Il CSV unisce tutto in un unico file di testo; l'Excel crea un file con schede separate.</p>
+      <button class="btn danger" id="btn-reset">Cancella tutti i movimenti</button>
+    </div>
+  </section>
 
-            let barra = document.getElementById('stat-barra-progresso');
-            barra.style.width = percentuale + '%';
+</main>
 
-            let testoRimanente = document.getElementById('stat-testo-rimanente');
-            if (budgetCorrente === 0) {
-                testoRimanente.innerText = '⚠️ Nessun budget impostato.';
-                barra.style.background = '#cbd5e1';
-            } else if (spesaAttualeFittizia > budgetCorrente) {
-                barra.style.background = '#ef4444';
-                testoRimanente.innerText = '❌ Hai superato il budget di € ' + (spesaAttualeFittizia - budgetCorrente).toFixed(2);
-            } else {
-                barra.style.background = '#10b981';
-                testoRimanente.innerText = '✅ Ti restano € ' + (budgetCorrente - spesaAttualeFittizia).toFixed(2) + ' per arrivare al limite.';
-            }
-        }
+<div class="toast" id="toast"></div>
 
-        function salvaBudget() {
-            let nuovoValore = parseFloat(document.getElementById('input-nuovo-budget').value);
-            if (isNaN(nuovoValore) || nuovoValore < 0) {
-                alert('Inserisci un importo valido.');
-                return;
-            }
-            budgetCorrente = nuovoValore;
-            localStorage.setItem('MioBudgetMensile', budgetCorrente);
-            aggiornaVistaStatistiche();
-            alert('Budget aggiornato con successo!');
-        }
+<script>
+const CATEGORIES_EXPENSE = ['Cibo','Salute/Farmacia','Utenze','Mutuo','Tasse','Macchina','Casa','Assicurazione','Cane','Gestione conto','Varie'];
+const CATEGORIES_INCOME = ['Anticipati','Conguaglio','Altro','Rata mensile'];
 
-        function azzeraBudget() {
-            if (confirm('Vuoi azzerare il budget mensile?')) {
-                budgetCorrente = 0;
-                localStorage.setItem('MioBudgetMensile', 0);
-                aggiornaVistaStatistiche();
-            }
-        }
+let people = [
+  {id:'p1', name:'Sbarby', quota:36},
+  {id:'p2', name:'Costy', quota:36},
+  {id:'p3', name:'Manu', quota:28},
+  {id:'p4', name:'Vale', quota:0}
+];
+let settings = { initialFamigliaCC: 0, initialContantiCasa: 0, pregressi: {} };
+let movements = []; // unified: {id, type:'expense'|'income', date, category, amount, desc, ...}
 
-        // Inizializzazione Grafico a Torta con Chart.js
-        const ctxTorta = document.getElementById('canvasGraficoTorta').getContext('2d');
-        const graficoTorta = new Chart(ctxTorta, {
-            type: 'doughnut',
-            data: {
-                labels: ['Alimentari', 'Casa', 'Svago', 'Altro'],
-                datasets: [{
-                    data: [45, 25, 20, 10], // Percentuali o importi delle voci di spesa
-                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#64748b'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { boxWidth: 14, font: { size: 12 } }
-                    }
-                }
-            }
-        });
+let listMonth = new Date();
+let settleMonth = new Date();
+let listTypeFilter = 'all';
+let listCategoryFilter = 'all';
+let settleExpanded = {};
+let overallExpanded = {};
+let overallAccountExpanded = {famiglia:false, contanti_casa:false};
+let editingId = null;
+let editingType = null;
+let accountViewMode = {famiglia:'totale', contanti_casa:'totale'};
+let pregressoFormOpen = false;
+let pregressoEditingId = null;
 
-        // Caricamento iniziale
-        aggiornaVistaStatistiche();
-    </script>
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function monthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function monthLabel(d){ return d.toLocaleDateString('it-IT',{month:'long', year:'numeric'}); }
+function fmtEUR(n){
+  return (Math.round(n*100)/100).toLocaleString('it-IT',{minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+}
+function uid(){ return 'm'+Date.now()+Math.random().toString(36).slice(2,7); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+// ---------- STORAGE CON NETLIFY FUNCTIONS (PARSING SICURO) ----------
+async function loadAll(){
+  try{
+    const resSettings = await fetch('/.netlify/functions/api?key=settings');
+    const rSettings = await resSettings.json();
+    if(rSettings && rSettings.value){
+      let parsed = rSettings.value;
+      if(typeof parsed === 'string') {
+        try { parsed = JSON.parse(parsed); } catch(e){}
+      }
+      if(parsed && typeof parsed === 'string') {
+        try { parsed = JSON.parse(parsed); } catch(e){}
+      }
+      if(parsed){
+        if(parsed.people) people = parsed.people;
+        if(parsed.initialFamigliaCC !== undefined) settings.initialFamigliaCC = parsed.initialFamigliaCC;
+        if(parsed.initialContantiCasa !== undefined) settings.initialContantiCasa = parsed.initialContantiCasa;
+        if(parsed.pregressi) settings.pregressi = parsed.pregressi;
+      }
+    }
+  }catch(e){ /* usa i valori predefiniti */ }
+
+  try{
+    const resExpenses = await fetch('/.netlify/functions/api?key=expenses');
+    const rExpenses = await resExpenses.json();
+    if(rExpenses && rExpenses.value){
+      let parsed = rExpenses.value;
+      if(typeof parsed === 'string') {
+        try { parsed = JSON.parse(parsed); } catch(e){}
+      }
+      if(parsed && typeof parsed === 'string') {
+        try { parsed = JSON.parse(parsed); } catch(e){}
+      }
+      movements = Array.isArray(parsed) ? parsed.map(m => ({...m, type: m.type || 'expense'})) : [];
+    }
+  }catch(e){ movements = []; }
+}
+
+async function saveSettings(){
+  try{
+    const res = await fetch('/.netlify/functions/api?key=settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        value: JSON.stringify({ people, initialFamigliaCC: settings.initialFamigliaCC, initialContantiCasa: settings.initialContantiCasa, pregressi: settings.pregressi })
+      })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }catch(e){ showToast('Errore nel salvataggio impostazioni'); }
+}
+
+async function saveMovements(){
+  try{
+    const res = await fetch('/.netlify/functions/api?key=expenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value: JSON.stringify(movements) })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }catch(e){ showToast('Errore nel salvataggio dati'); }
+}
+
+// ---------- ACCOUNT / PAYER OPTIONS ----------
+function payerAccountOptions(){
+  return [
+    {id:'p1', label: people[0].name + ' (conto personale)', person:'p1'},
+    {id:'p1_cash', label: people[0].name + ' (contanti)', person:'p1'},
+    {id:'p2', label: people[1].name + ' (conto personale)', person:'p2'},
+    {id:'p2_cash', label: people[1].name + ' (contanti)', person:'p2'},
+    {id:'p3', label: people[2].name + ' (conto personale)', person:'p3'},
+    {id:'p3_cash', label: people[2].name + ' (contanti)', person:'p3'},
+    {id:'famiglia', label:'Conto Famiglia CC', person:null},
+    {id:'contanti_casa', label:'Contanti Casa (Conto Famiglia Contanti)', person:null},
+    {id:'esterno', label: people[3].name + ' (pagamento diretto)', person:'p4'}
+  ];
+}
+function incomeDestAccounts(){
+  return [
+    {id:'famiglia', label:'Conto Famiglia CC'},
+    {id:'contanti_casa', label:'Conto Famiglia Contanti'}
+  ];
+}
+
+// ---------- TABS ----------
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{ activateTab(btn.dataset.tab); });
+});
+function activateTab(tab){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['add','list','settle','overall','accounts','settings'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = (t===tab)?'block':'none';
+  });
+  if(tab==='list') renderList();
+  if(tab==='settle') renderSettle();
+  if(tab==='overall') renderOverall();
+  if(tab==='accounts') renderAccounts();
+  if(tab==='settings') renderSettingsPeople();
+}
+
+// ---------- ADD / EDIT FORM ----------
+function populateAddFormOptions(){
+  document.getElementById('f-category').innerHTML = CATEGORIES_EXPENSE.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('f-paidby').innerHTML = payerAccountOptions().map(a=>`<option value="${a.id}">${a.label}</option>`).join('');
+  document.getElementById('i-category').innerHTML = CATEGORIES_INCOME.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('i-destaccount').innerHTML = incomeDestAccounts().map(a=>`<option value="${a.id}">${a.label}</option>`).join('');
+  document.getElementById('i-person').innerHTML = '<option value="">—</option>' + people.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+}
+
+function initAddForm(){
+  populateAddFormOptions();
+  document.getElementById('f-date').value = todayISO();
+  document.getElementById('i-date').value = todayISO();
+  document.getElementById('f-paidby').value = 'famiglia';
+  onTypeChange();
+  onIncomeCategoryChange();
+  renderSplitEditor();
+}
+
+function attachAddFormListenersOnce(){
+  document.getElementById('m-type').addEventListener('change', onTypeChange);
+  document.getElementById('i-category').addEventListener('change', onIncomeCategoryChange);
+  document.getElementById('f-splittype').addEventListener('change', renderSplitEditor);
+
+  document.getElementById('btn-mutuo').addEventListener('click', ()=>{
+    document.getElementById('m-type').value = 'expense'; onTypeChange();
+    document.getElementById('f-category').value = 'Mutuo';
+    document.getElementById('f-amount').value = '754';
+    document.getElementById('f-desc').value = 'Rata mutuo';
+    document.getElementById('f-paidby').value = 'famiglia';
+    document.getElementById('f-splittype').value = 'quota3';
+    renderSplitEditor();
+  });
+  document.getElementById('btn-tasse1').addEventListener('click', ()=>{
+    document.getElementById('m-type').value = 'expense'; onTypeChange();
+    document.getElementById('f-category').value = 'Tasse';
+    document.getElementById('f-amount').value = '85';
+    document.getElementById('f-desc').value = 'Tasse 1';
+    document.getElementById('f-paidby').value = 'famiglia';
+    document.getElementById('f-splittype').value = 'quota4';
+    renderSplitEditor();
+  });
+  document.getElementById('btn-tasse2').addEventListener('click', ()=>{
+    document.getElementById('m-type').value = 'expense'; onTypeChange();
+    document.getElementById('f-category').value = 'Tasse';
+    document.getElementById('f-amount').value = '435';
+    document.getElementById('f-desc').value = 'Tasse 2';
+    document.getElementById('f-paidby').value = 'famiglia';
+    document.getElementById('f-splittype').value = 'quota4';
+    renderSplitEditor();
+  });
+  document.getElementById('btn-pannelli').addEventListener('click', ()=>{
+    document.getElementById('m-type').value = 'expense'; onTypeChange();
+    document.getElementById('f-category').value = 'Casa';
+    document.getElementById('f-amount').value = '285';
+    document.getElementById('f-desc').value = 'Pannelli e depuratore';
+    document.getElementById('f-paidby').value = 'p1';
+    document.getElementById('f-splittype').value = 'custom';
+    renderSplitEditor();
+    const p1input = document.getElementById('split-custom-p1');
+    if(p1input){
+      people.forEach(p=>{
+        const el = document.getElementById('split-custom-'+p.id);
+        if(el) el.value = (p.id==='p1') ? 100 : 0;
+      });
+      updateSplitSum();
+    }
+  });
+
+  document.getElementById('btn-save-movement').addEventListener('click', saveMovement);
+  document.getElementById('btn-cancel-edit').addEventListener('click', cancelEdit);
+}
+
+function onTypeChange(){
+  const type = document.getElementById('m-type').value;
+  document.getElementById('expense-fields').style.display = type==='expense' ? 'block' : 'none';
+  document.getElementById('income-fields').style.display = type==='income' ? 'block' : 'none';
+}
+
+function onIncomeCategoryChange(){
+  const cat = document.getElementById('i-category').value;
+  const label = document.getElementById('i-person-label');
+  const select = document.getElementById('i-person');
+  if(cat==='Conguaglio' || cat==='Anticipati' || cat==='Rata mensile'){
+    label.textContent = 'Versato da *';
+    select.required = true;
+  } else {
+    label.textContent = 'Versato da (opzionale)';
+    select.required = false;
+  }
+}
+
+function currentSplitValues(){
+  const type = document.getElementById('f-splittype').value;
+  if(type==='quota3'){
+    return {p1:people[0].quota, p2:people[1].quota, p3:people[2].quota, p4:0};
+  }
+  if(type==='quota4'){
+    const vals = {};
+    people.forEach(p=>{
+      const el = document.getElementById('split-q4-'+p.id);
+      vals[p.id] = el ? parseFloat(el.value)||0 : 25;
+    });
+    return vals;
+  }
+  const vals = {};
+  people.forEach(p=>{
+    const el = document.getElementById('split-custom-'+p.id);
+    vals[p.id] = el ? parseFloat(el.value)||0 : 0;
+  });
+  return vals;
+}
+
+function renderSplitEditor(){
+  const type = document.getElementById('f-splittype').value;
+  const wrap = document.getElementById('split-editor-wrap');
+  if(type==='quota3'){
+    wrap.innerHTML = `<div class="split-editor">
+      <div style="font-size:13px;color:var(--ink-soft);margin-bottom:6px">Quote fisse: ${people[0].name} ${people[0].quota}% · ${people[1].name} ${people[1].quota}% · ${people[2].name} ${people[2].quota}%</div>
+    </div>`;
+    return;
+  }
+  if(type==='quota4'){
+    wrap.innerHTML = `<div class="split-editor">
+      ${people.map(p=>`
+        <div class="person-split">
+          <label>${p.name}</label>
+          <input type="number" id="split-q4-${p.id}" value="25" min="0" max="100" step="0.1">
+          <span>%</span>
+        </div>`).join('')}
+      <div class="split-sum" id="split-sum-indicator"></div>
+    </div>`;
+    people.forEach(p=>{
+      document.getElementById('split-q4-'+p.id).addEventListener('input', updateSplitSum);
+    });
+    updateSplitSum();
+    return;
+  }
+  wrap.innerHTML = `<div class="split-editor">
+    <div style="font-size:13px;color:var(--ink-soft);margin-bottom:6px">Inserisci la % di ciascuno (es. consumo telepass/metano). Deve sommare a 100%.</div>
+    ${people.map(p=>`
+      <div class="person-split">
+        <label>${p.name}</label>
+        <input type="number" id="split-custom-${p.id}" value="0" min="0" max="100" step="0.1">
+        <span>%</span>
+      </div>`).join('')}
+    <div class="split-sum" id="split-sum-indicator"></div>
+  </div>`;
+  people.forEach(p=>{
+    document.getElementById('split-custom-'+p.id).addEventListener('input', updateSplitSum);
+  });
+  updateSplitSum();
+}
+
+function updateSplitSum(){
+  const vals = currentSplitValues();
+  const sum = Object.values(vals).reduce((a,b)=>a+b,0);
+  const el = document.getElementById('split-sum-indicator');
+  if(!el) return;
+  el.textContent = 'Totale: '+sum.toFixed(1)+'%' + (Math.abs(sum-100)<0.05 ? ' ✓' : ' — deve fare 100%');
+  el.className = 'split-sum ' + (Math.abs(sum-100)<0.05 ? 'ok' : 'bad');
+}
+
+function resetFormDefaults(){
+  document.getElementById('m-type').value = 'expense';
+  document.getElementById('f-date').value = todayISO();
+  document.getElementById('f-category').value = CATEGORIES_EXPENSE[0];
+  document.getElementById('f-amount').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-paidby').value = 'famiglia';
+  document.getElementById('f-splittype').value = 'quota3';
+  document.getElementById('i-date').value = todayISO();
+  document.getElementById('i-category').value = CATEGORIES_INCOME[0];
+  document.getElementById('i-amount').value = '';
+  document.getElementById('i-desc').value = '';
+  document.getElementById('i-destaccount').value = incomeDestAccounts()[0].id;
+  document.getElementById('i-person').value = '';
+  onTypeChange();
+  onIncomeCategoryChange();
+  renderSplitEditor();
+}
+
+function resetEditState(){
+  editingId = null;
+  editingType = null;
+  document.getElementById('btn-save-movement').textContent = 'Salva';
+  document.getElementById('btn-cancel-edit').style.display = 'none';
+}
+
+function cancelEdit(){
+  resetEditState();
+  resetFormDefaults();
+  showToast('Modifica annullata');
+}
+
+async function saveMovement(){
+  const type = document.getElementById('m-type').value;
+  let record;
+
+  if(type==='expense'){
+    const date = document.getElementById('f-date').value;
+    const category = document.getElementById('f-category').value;
+    const amount = parseFloat(document.getElementById('f-amount').value);
+    const desc = document.getElementById('f-desc').value.trim();
+    const paidBy = document.getElementById('f-paidby').value;
+    const splitType = document.getElementById('f-splittype').value;
+    const splitValues = currentSplitValues();
+    const sum = Object.values(splitValues).reduce((a,b)=>a+b,0);
+
+    if(!date || !amount || amount<=0){ showToast('Inserisci data e importo validi'); return; }
+    if(Math.abs(sum-100) > 0.5){ showToast('La suddivisione deve sommare a 100%'); return; }
+
+    record = {
+      id: (editingId && editingType==='expense') ? editingId : uid(),
+      type:'expense', date, category, amount, desc, paidBy, splitType, splitValues
+    };
+  } else {
+    const date = document.getElementById('i-date').value;
+    const category = document.getElementById('i-category').value;
+    const amount = parseFloat(document.getElementById('i-amount').value);
+    const desc = document.getElementById('i-desc').value.trim();
+    const destAccount = document.getElementById('i-destaccount').value;
+    const person = document.getElementById('i-person').value || null;
+
+    if(!date || !amount || amount<=0){ showToast('Inserisci data e importo validi'); return; }
+    if((category==='Conguaglio' || category==='Anticipati' || category==='Rata mensile') && !person){ showToast('Per "'+category+'" è obbligatorio indicare "Versato da"'); return; }
+
+    record = {
+      id: (editingId && editingType==='income') ? editingId : uid(),
+      type:'income', date, category, amount, desc, destAccount, person
+    };
+  }
+
+  const wasEditing = !!editingId;
+  if(wasEditing){
+    const idx = movements.findIndex(m=>m.id===editingId);
+    if(idx>=0) movements[idx] = record; else movements.push(record);
+  } else {
+    movements.push(record);
+  }
+  await saveMovements();
+  resetEditState();
+  resetFormDefaults();
+  showToast(wasEditing ? 'Movimento aggiornato' : 'Movimento salvato');
+
+  renderList();
+  renderSettle();
+  renderOverall();
+  renderAccounts();
+}
+
+function editMovement(id){
+  const m = movements.find(x=>x.id===id);
+  if(!m) return;
+  editingId = m.id;
+  editingType = m.type;
+
+  document.getElementById('m-type').value = m.type;
+  onTypeChange();
+
+  if(m.type==='expense'){
+    document.getElementById('f-date').value = m.date;
+    document.getElementById('f-category').value = m.category;
+    document.getElementById('f-amount').value = m.amount;
+    document.getElementById('f-desc').value = m.desc || '';
+    document.getElementById('f-paidby').value = m.paidBy;
+    document.getElementById('f-splittype').value = m.splitType;
+    renderSplitEditor();
+    Object.entries(m.splitValues || {}).forEach(([pid,val])=>{
+      const elQ4 = document.getElementById('split-q4-'+pid);
+      const elCustom = document.getElementById('split-custom-'+pid);
+      if(elQ4) elQ4.value = val;
+      if(elCustom) elCustom.value = val;
+    });
+    updateSplitSum();
+  } else {
+    document.getElementById('i-date').value = m.date;
+    document.getElementById('i-category').value = m.category;
+    onIncomeCategoryChange();
+    document.getElementById('i-amount').value = m.amount;
+    document.getElementById('i-desc').value = m.desc || '';
+    document.getElementById('i-destaccount').value = m.destAccount;
+    document.getElementById('i-person').value = m.person || '';
+  }
+
+  document.getElementById('btn-save-movement').textContent = 'Aggiorna';
+  document.getElementById('btn-cancel-edit').style.display = 'inline-block';
+  activateTab('add');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ---------- SHARED HELPERS ----------
+function itemsForMonth(d){
+  const key = monthKey(d);
+  return movements.filter(m => m.date && m.date.slice(0,7) === key);
+}
+function itemsUpToMonth(d){
+  const key = monthKey(d);
+  return movements.filter(m => m.date && m.date.slice(0,7) <= key);
+}
+
+function computeAggregate(expenseItems){
+  const total = expenseItems.reduce((s,e)=>s+e.amount,0);
+  const owed = {p1:0,p2:0,p3:0,p4:0};
+  const paidPersonal = {p1:0,p2:0,p3:0,p4:0};
+  let paidFamiglia = 0;
+  let paidContantiCasa = 0;
+  const byCategory = {};
+  const accMap = Object.fromEntries(payerAccountOptions().map(a=>[a.id,a]));
+
+  expenseItems.forEach(e=>{
+    people.forEach(p=>{
+      const pct = e.splitValues[p.id] || 0;
+      owed[p.id] += e.amount * pct / 100;
+    });
+    if(e.paidBy==='famiglia'){
+      paidFamiglia += e.amount;
+    } else if(e.paidBy==='contanti_casa'){
+      paidContantiCasa += e.amount;
+    } else {
+      const acc = accMap[e.paidBy];
+      const person = acc ? acc.person : null;
+      if(person && paidPersonal[person] !== undefined) paidPersonal[person] += e.amount;
+    }
+    byCategory[e.category] = (byCategory[e.category]||0) + e.amount;
+  });
+
+  return {total, owed, paidPersonal, paidFamiglia, paidContantiCasa, byCategory, count: expenseItems.length};
+}
+
+function computeSettlementFull(items, pregressi, includeConguaglio){
+  const expenseItems = items.filter(i=>i.type==='expense');
+  const incomeItems = items.filter(i=>i.type==='income');
+  const agg = computeAggregate(expenseItems);
+
+  const conguagliVersati = {p1:0,p2:0,p3:0,p4:0};
+  const anticipatiVersati = {p1:0,p2:0,p3:0,p4:0};
+  const altroEntrate = {p1:0,p2:0,p3:0,p4:0};
+  const rataMensileVersata = {p1:0,p2:0,p3:0,p4:0};
+  incomeItems.forEach(inc=>{
+    if(!inc.person || conguagliVersati[inc.person] === undefined) return;
+    if(inc.category==='Conguaglio') conguagliVersati[inc.person] += inc.amount;
+    else if(inc.category==='Anticipati') anticipatiVersati[inc.person] += inc.amount;
+    else if(inc.category==='Rata mensile') rataMensileVersata[inc.person] += inc.amount;
+    else altroEntrate[inc.person] += inc.amount;
+  });
+
+  const pregressoMap = pregressi || {};
+  const debitoTeorico = {};
+  const versamentiConteggiati = {};
+  const saldoFinale = {};
+  people.forEach(p=>{
+    debitoTeorico[p.id] = agg.owed[p.id] - agg.paidPersonal[p.id];
+    versamentiConteggiati[p.id] = (anticipatiVersati[p.id]||0) + (rataMensileVersata[p.id]||0) + (includeConguaglio ? (conguagliVersati[p.id]||0) : 0);
+    saldoFinale[p.id] = (pregressoMap[p.id]||0) + debitoTeorico[p.id] - versamentiConteggiati[p.id];
+  });
+
+  return {...agg, conguagliVersati, anticipatiVersati, altroEntrate, rataMensileVersata, versamentiConteggiati, debitoTeorico, saldoFinale, pregressi: pregressoMap, includeConguaglio: !!includeConguaglio};
+}
+
+function pregressiSignedMap(){
+  const map = {};
+  people.forEach(p=>{
+    const entry = settings.pregressi && settings.pregressi[p.id];
+    map[p.id] = entry ? (entry.amount||0) : 0;
+  });
+  return map;
+}
+
+function computeAccount(accountId){
+  const initial = accountId==='famiglia' ? (settings.initialFamigliaCC||0) : (settings.initialContantiCasa||0);
+  const relevant = movements.filter(m =>
+    (m.type==='expense' && m.paidBy===accountId) ||
+    (m.type==='income' && m.destAccount===accountId)
+  ).slice().sort((a,b)=> a.date.localeCompare(b.date));
+
+  let entrate = 0, uscite = 0, running = initial;
+  const rows = relevant.map(m=>{
+    if(m.type==='income'){ entrate += m.amount; running += m.amount; }
+    else { uscite += m.amount; running -= m.amount; }
+    return {...m, saldoProgressivo: running};
+  });
+
+  return {initial, entrate, uscite, saldo: initial + entrate - uscite, rows};
+}
+
+function personDetailRows(expenseItems, personId){
+  const accMap = Object.fromEntries(payerAccountOptions().map(a=>[a.id,a.label]));
+  return expenseItems
+    .filter(e => (e.splitValues[personId] || 0) > 0)
+    .slice()
+    .sort((a,b)=> a.date.localeCompare(b.date))
+    .map(e=>({
+      id: e.id, date: e.date, category: e.category, desc: e.desc, amount: e.amount,
+      pct: e.splitValues[personId],
+      quota: e.amount * e.splitValues[personId] / 100,
+      paidByLabel: accMap[e.paidBy] || e.paidBy
+    }));
+}
+
+function personConguagliRows(incomeItems, personId, category){
+  const destMap = Object.fromEntries(incomeDestAccounts().map(a=>[a.id,a.label]));
+  return incomeItems
+    .filter(i => i.person===personId && i.category===category)
+    .slice()
+    .sort((a,b)=> a.date.localeCompare(b.date))
+    .map(i=>({id:i.id, date:i.date, amount:i.amount, category:i.category, desc:i.desc, destLabel: destMap[i.destAccount] || i.destAccount}));
+}
+
+function renderPersonDetailTable(expenseItems, personId){
+  const rows = personDetailRows(expenseItems, personId);
+  if(rows.length===0){
+    return '<div class="empty">Nessuna spesa a carico di questa persona nel periodo selezionato.</div>';
+  }
+  return `<div class="table-scroll"><table>
+    <thead><tr><th>Data</th><th>Categoria</th><th class="num">Importo tot.</th><th class="num">%</th><th class="num">Quota attrib.</th><th>Pagata da</th><th></th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td>${r.date}${r.desc? '<br><span style=\"color:var(--ink-soft);font-size:12px\">'+r.desc+'</span>':''}</td>
+      <td>${r.category}</td>
+      <td class="num">${fmtEUR(r.amount)}</td>
+      <td class="num">${r.pct}%</td>
+      <td class="num">${fmtEUR(r.quota)}</td>
+      <td><span class="pill">${r.paidByLabel}</span></td>
+      <td><button class="btn secondary tiny" data-edit="${r.id}">Modifica</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderPersonConguagliTable(incomeItems, personId, category){
+  const rows = personConguagliRows(incomeItems, personId, category);
+  if(rows.length===0){
+    return `<div class="empty">Nessun movimento "${category}" in questo periodo.</div>`;
+  }
+  return `<div class="table-scroll"><table>
+    <thead><tr><th>Data</th><th class="num">Importo</th><th>Descrizione</th><th>Conto destinazione</th><th></th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td>${r.date}</td>
+      <td class="num">${fmtEUR(r.amount)}</td>
+      <td>${r.desc || r.category || '-'}</td>
+      <td><span class="pill">${r.destLabel}</span></td>
+      <td><button class="btn secondary tiny" data-edit="${r.id}">Modifica</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderAccountMovementsTable(acc){
+  const statsHtml = `<div class="summary-grid" style="margin-bottom:10px">
+    <div class="stat"><div class="label">Saldo iniziale</div><div class="value">${fmtEUR(acc.initial)}</div></div>
+    <div class="stat"><div class="label">Entrate</div><div class="value" style="color:var(--credit)">${fmtEUR(acc.entrate)}</div></div>
+    <div class="stat"><div class="label">Uscite</div><div class="value" style="color:var(--debit)">${fmtEUR(acc.uscite)}</div></div>
+    <div class="stat"><div class="label">Saldo attuale</div><div class="value">${fmtEUR(acc.saldo)}</div></div>
+  </div>`;
+  if(acc.rows.length===0){
+    return statsHtml + '<div class="empty">Nessun movimento registrato su questo conto.</div>';
+  }
+  const rows = acc.rows.map(m=>{
+    const isIncome = m.type==='income';
+    return `<tr>
+      <td>${m.date}</td>
+      <td><span class="pill ${isIncome?'pill-income':'pill-expense'}">${isIncome?'Entrata':'Spesa'}</span></td>
+      <td>${m.category}${m.desc? '<br><span style=\"color:var(--ink-soft);font-size:12px\">'+m.desc+'</span>':''}</td>
+      <td class="num" style="color:${isIncome?'var(--credit)':'var(--debit)'}">${isIncome?'+':'-'}${fmtEUR(m.amount)}</td>
+      <td class="num">${fmtEUR(m.saldoProgressivo)}</td>
+      <td><button class="btn secondary tiny" data-edit="${m.id}">Modifica</button></td>
+    </tr>`;
+  }).join('');
+  return statsHtml + `<div class="table-scroll"><table>
+    <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th class="num">Importo</th><th class="num">Saldo progr.</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function monthKeyOf(dateStr){ return dateStr.slice(0,7); }
+function monthLabelFromKey(key){
+  const [y,m] = key.split('-').map(Number);
+  return new Date(y, m-1, 1).toLocaleDateString('it-IT',{month:'long', year:'numeric'});
+}
+
+function computeAccountMonthly(acc){
+  const byMonth = {};
+  const order = [];
+  acc.rows.forEach(m=>{
+    const key = monthKeyOf(m.date);
+    if(!byMonth[key]){ byMonth[key] = {key, entrate:0, uscite:0, rows:[]}; order.push(key); }
+    if(m.type==='income') byMonth[key].entrate += m.amount; else byMonth[key].uscite += m.amount;
+    byMonth[key].rows.push(m);
+  });
+  let running = acc.initial;
+  return order.map(key=>{
+    const g = byMonth[key];
+    const saldoIniziale = running;
+    const saldoFinale = g.rows.length ? g.rows[g.rows.length-1].saldoProgressivo : running;
+    running = saldoFinale;
+    return {
+      key, label: monthLabelFromKey(key),
+      saldoIniziale, entrate: g.entrate, uscite: g.uscite,
+      differenza: g.entrate - g.uscite, saldoFinale, rows: g.rows
+    };
+  });
+}
+
+function renderAccountMonthlyView(acc){
+  const months = computeAccountMonthly(acc);
+  if(months.length===0){
+    return '<div class="empty">Nessun movimento registrato su questo conto.</div>';
+  }
+  return months.map(mo=>{
+    const diffColor = mo.differenza>=0 ? 'var(--credit)' : 'var(--debit)';
+    const rowsHtml = mo.rows.map(m=>{
+      const isIncome = m.type==='income';
+      return `<tr>
+        <td>${m.date}</td>
+        <td><span class="pill ${isIncome?'pill-income':'pill-expense'}">${isIncome?'Entrata':'Spesa'}</span></td>
+        <td>${m.category}${m.desc? '<br><span style=\"color:var(--ink-soft);font-size:12px\">'+m.desc+'</span>':''}</td>
+        <td class="num" style="color:${isIncome?'var(--credit)':'var(--debit)'}">${isIncome?'+':'-'}${fmtEUR(m.amount)}</td>
+        <td class="num">${fmtEUR(m.saldoProgressivo)}</td>
+        <td><button class="btn secondary tiny" data-edit="${m.id}">Modifica</button></td>
+      </tr>`;
+    }).join('');
+    return `<div class="card" style="box-shadow:none;border:1px solid var(--paper-line);padding:14px;margin-bottom:12px">
+      <div class="month-nav" style="margin-bottom:10px"><div class="month-label" style="font-size:17px">${mo.label}</div></div>
+      <div class="summary-grid" style="margin-bottom:10px">
+        <div class="stat"><div class="label">Saldo iniziale</div><div class="value">${fmtEUR(mo.saldoIniziale)}</div></div>
+        <div class="stat"><div class="label">Entrate</div><div class="value" style="color:var(--credit)">${fmtEUR(mo.entrate)}</div></div>
+        <div class="stat"><div class="label">Uscite</div><div class="value" style="color:var(--debit)">${fmtEUR(mo.uscite)}</div></div>
+        <div class="stat"><div class="label">Differenza mese</div><div class="value" style="color:${diffColor}">${mo.differenza>=0?'+':''}${fmtEUR(mo.differenza)}</div></div>
+        <div class="stat"><div class="label">Saldo finale</div><div class="value">${fmtEUR(mo.saldoFinale)}</div></div>
+      </div>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th class="num">Importo</th><th class="num">Saldo progr.</th><th></th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- LIST TAB ----------
+function renderList(){
+  document.getElementById('list-month-label').textContent = monthLabel(listMonth);
+
+  const typeSel = document.getElementById('list-type-filter');
+  if(typeSel.options.length===0){
+    typeSel.innerHTML = '<option value="all">Tutti</option><option value="expense">Spese</option><option value="income">Entrate</option>';
+  }
+  typeSel.value = listTypeFilter;
+
+  const catSel = document.getElementById('list-category-filter');
+  const catOptions = listTypeFilter==='income' ? CATEGORIES_INCOME
+                    : listTypeFilter==='expense' ? CATEGORIES_EXPENSE
+                    : [...CATEGORIES_EXPENSE, ...CATEGORIES_INCOME];
+  catSel.innerHTML = '<option value="all">Tutte le categorie</option>' + catOptions.map(c=>`<option value="${c}">${c}</option>`).join('');
+  if(![...catSel.options].some(o=>o.value===listCategoryFilter)) listCategoryFilter = 'all';
+  catSel.value = listCategoryFilter;
+
+  let items = itemsForMonth(listMonth);
+  if(listTypeFilter!=='all') items = items.filter(m=>m.type===listTypeFilter);
+  if(listCategoryFilter!=='all') items = items.filter(m=>m.category===listCategoryFilter);
+  items = items.slice().sort((a,b)=> a.date.localeCompare(b.date));
+
+  const wrap = document.getElementById('list-table-wrap');
+  if(items.length===0){
+    wrap.innerHTML = '<div class="empty">Nessun movimento trovato per i filtri selezionati.</div>';
+    return;
+  }
+
+  const payerMap = Object.fromEntries(payerAccountOptions().map(a=>[a.id,a.label]));
+  const destMap = Object.fromEntries(incomeDestAccounts().map(a=>[a.id,a.label]));
+
+  let totExpense = 0, totIncome = 0;
+  const rows = items.map(m=>{
+    if(m.type==='expense'){
+      totExpense += m.amount;
+      const splitStr = Object.entries(m.splitValues).filter(([k,v])=>v>0).map(([k,v])=>{
+        const p = people.find(pp=>pp.id===k);
+        return p.name+' '+v+'%';
+      }).join(', ');
+      return `<tr>
+        <td>${m.date}</td>
+        <td><span class="pill pill-expense">Spesa</span></td>
+        <td>${m.category}${m.desc? '<br><span style=\"color:var(--ink-soft);font-size:12px\">'+m.desc+'</span>':''}</td>
+        <td style="font-size:12px;color:var(--ink-soft)">${payerMap[m.paidBy]||m.paidBy}<br>${splitStr}</td>
+        <td class="num" style="color:var(--debit)">-${fmtEUR(m.amount)}</td>
+        <td><button class="btn secondary small" data-edit="${m.id}">Modifica</button> <button class="btn danger" data-del="${m.id}">Elimina</button></td>
+      </tr>`;
+    } else {
+      totIncome += m.amount;
+      const personName = m.person ? (people.find(p=>p.id===m.person)?.name || m.person) : '-';
+      return `<tr>
+        <td>${m.date}</td>
+        <td><span class="pill pill-income">Entrata</span></td>
+        <td>${m.category}${m.desc? '<br><span style=\"color:var(--ink-soft);font-size:12px\">'+m.desc+'</span>':''}</td>
+        <td style="font-size:12px;color:var(--ink-soft)">${destMap[m.destAccount]||m.destAccount}${m.person && (m.category==='Conguaglio'||m.category==='Anticipati'||m.category==='Rata mensile') ? '<br>versato da: '+personName : ''}</td>
+        <td class="num" style="color:var(--credit)">+${fmtEUR(m.amount)}</td>
+        <td><button class="btn secondary small" data-edit="${m.id}">Modifica</button> <button class="btn danger" data-del="${m.id}">Elimina</button></td>
+      </tr>`;
+    }
+  }).join('');
+
+  wrap.innerHTML = `<div class="table-scroll"><table>
+    <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Dettaglio</th><th class="num">Importo</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr><td colspan="4" style="font-weight:700">Totale entrate</td><td class="num" style="font-weight:700;color:var(--credit)">+${fmtEUR(totIncome)}</td><td></td></tr>
+      <tr><td colspan="4" style="font-weight:700">Totale spese</td><td class="num" style="font-weight:700;color:var(--debit)">-${fmtEUR(totExpense)}</td><td></td></tr>
+      <tr><td colspan="4" style="font-weight:700">Saldo netto periodo</td><td class="num" style="font-weight:700">${fmtEUR(totIncome-totExpense)}</td><td></td></tr>
+    </tfoot>
+  </table></div>`;
+
+  wrap.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      movements = movements.filter(m=>m.id!==btn.dataset.del);
+      await saveMovements();
+      renderList(); renderSettle(); renderOverall(); renderAccounts();
+      showToast('Movimento eliminato');
+    });
+  });
+  attachEditButtons();
+}
+
+function attachEditButtons(){
+  document.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.onclick = ()=> editMovement(btn.dataset.edit);
+  });
+}
+
+document.getElementById('list-prev').addEventListener('click', ()=>{
+  listMonth = new Date(listMonth.getFullYear(), listMonth.getMonth()-1, 1);
+  renderList();
+});
+document.getElementById('list-next').addEventListener('click', ()=>{
+  listMonth = new Date(listMonth.getFullYear(), listMonth.getMonth()+1, 1);
+  renderList();
+});
+document.getElementById('list-type-filter').addEventListener('change', (e)=>{
+  listTypeFilter = e.target.value;
+  listCategoryFilter = 'all';
+  renderList();
+});
+document.getElementById('list-category-filter').addEventListener('change', (e)=>{
+  listCategoryFilter = e.target.value;
+  renderList();
+});
+
+// ---------- SETTLEMENT TAB ----------
+function renderSettle(){
+  document.getElementById('settle-month-label').textContent = monthLabel(settleMonth);
+
+  const items = itemsForMonth(settleMonth);
+  const aggMonth = computeAggregate(items.filter(i=>i.type==='expense'));
+
+  const r = computeSettlementFull(items, {}, false);
+  const expenseItems = items.filter(i=>i.type==='expense');
+  const incomeItems = items.filter(i=>i.type==='income');
+
+  document.getElementById('settle-stats').innerHTML = `
+    <div class="stat"><div class="label">Spesa totale (mese)</div><div class="value">${fmtEUR(aggMonth.total)}</div></div>
+    <div class="stat"><div class="label">Voci di spesa</div><div class="value">${aggMonth.count}</div></div>
+    <div class="stat"><div class="label">Uscito dal Conto Famiglia CC</div><div class="value">${fmtEUR(aggMonth.paidFamiglia)}</div></div>
+    <div class="stat"><div class="label">Uscito da Contanti Casa</div><div class="value">${fmtEUR(aggMonth.paidContantiCasa)}</div></div>
+  `;
+
+  const rowsWrap = document.getElementById('settle-rows');
+  rowsWrap.innerHTML = people.map(p=>{
+    if(p.id==='p4' && Math.abs(r.owed.p4)<0.005 && Math.abs(r.paidPersonal.p4)<0.005 && Math.abs(r.anticipatiVersati.p4||0)<0.005 && Math.abs(r.conguagliVersati.p4||0)<0.005 && Math.abs(r.altroEntrate.p4||0)<0.005 && Math.abs(r.rataMensileVersata.p4||0)<0.005) return '';
+    const n = r.saldoFinale[p.id];
+    let cls='zero', text='In pari';
+    if(n > 0.01){ cls='debit'; text='deve versare'; }
+    else if(n < -0.01){ cls='credit'; text='è a credito'; }
+    const isOpen = !!settleExpanded[p.id];
+    return `<div class="settle-item">
+      <div class="settle-row clickable ${cls}" data-person="${p.id}">
+        <div>
+          <div class="who">${p.name}<span class="caret">${isOpen?'▲':'▼'}</span></div>
+          <div class="detail">quota (solo questo mese): ${fmtEUR(r.owed[p.id])} · pagato: ${fmtEUR(r.paidPersonal[p.id])} · debito teorico: ${fmtEUR(r.debitoTeorico[p.id])} · anticipati versati: ${fmtEUR(r.anticipatiVersati[p.id]||0)} · rata mensile versata: ${fmtEUR(r.rataMensileVersata[p.id]||0)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="detail">${text}</div>
+          <div class="amount">${fmtEUR(Math.abs(n))}</div>
+        </div>
+      </div>
+      ${isOpen ? `<div class="person-detail-wrap">
+        <div style="font-weight:600;font-size:13px;margin:6px 0 4px;color:var(--ledger)">Spese / quota (solo questo mese)</div>
+        ${renderPersonDetailTable(expenseItems, p.id)}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Anticipati versati (riducono il debito / generano credito per l'eccedenza)</div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Anticipati')}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Rata mensile versata (riduce il debito mensile)</div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Rata mensile')}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Conguagli versati <span style="font-weight:400;color:var(--ink-soft)">(movimento visibile, ma NON conteggiato qui — vedi pagina Situazione)</span></div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Conguaglio')}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Altro <span style="font-weight:400;color:var(--ink-soft)">(guadagno puro della casa, nessun effetto sulla posizione individuale)</span></div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Altro')}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+  rowsWrap.querySelectorAll('[data-person]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      settleExpanded[el.dataset.person] = !settleExpanded[el.dataset.person];
+      renderSettle();
+    });
+  });
+
+  const catWrap = document.getElementById('settle-by-cat');
+  const cats = Object.entries(aggMonth.byCategory).sort((a,b)=>b[1]-a[1]);
+  if(cats.length===0){
+    catWrap.innerHTML = '<div class="empty">Nessuna spesa questo mese.</div>';
+  } else {
+    catWrap.innerHTML = `<div class="table-scroll"><table>
+      <thead><tr><th>Categoria</th><th class="num">Totale</th><th class="num">% sul totale</th></tr></thead>
+      <tbody>${cats.map(([c,v])=>`<tr><td>${c}</td><td class="num">${fmtEUR(v)}</td><td class="num">${((v/aggMonth.total)*100).toFixed(1)}%</td></tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  document.getElementById('copy-output').innerHTML = '';
+  attachEditButtons();
+}
+
+document.getElementById('settle-prev').addEventListener('click', ()=>{
+  settleMonth = new Date(settleMonth.getFullYear(), settleMonth.getMonth()-1, 1);
+  renderSettle();
+});
+document.getElementById('settle-next').addEventListener('click', ()=>{
+  settleMonth = new Date(settleMonth.getFullYear(), settleMonth.getMonth()+1, 1);
+  renderSettle();
+});
+
+document.getElementById('btn-copy-summary').addEventListener('click', ()=>{
+  const items = itemsForMonth(settleMonth);
+  const r = computeSettlementFull(items, {}, false);
+  let txt = `Riepilogo Mensile ${monthLabel(settleMonth)} (solo questo mese, senza conguagli e senza posizione pregressa)\n`;
+  txt += `Spesa totale del mese: ${fmtEUR(r.total)}\n\n`;
+  people.forEach(p=>{
+    if(p.id==='p4' && Math.abs(r.owed.p4)<0.005 && Math.abs(r.paidPersonal.p4)<0.005 && Math.abs(r.anticipatiVersati.p4||0)<0.005 && Math.abs(r.rataMensileVersata.p4||0)<0.005) return;
+    const n = r.saldoFinale[p.id];
+    if(Math.abs(n)<0.01){
+      txt += `${p.name}: in pari\n`;
+    } else if(n>0){
+      txt += `${p.name}: deve versare ${fmtEUR(n)}\n`;
+    } else {
+      txt += `${p.name}: a credito di ${fmtEUR(-n)}\n`;
+    }
+  });
+  const box = document.getElementById('copy-output');
+  box.innerHTML = `<div class="copybox">${txt}</div>`;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(()=>showToast('Riepilogo copiato negli appunti')).catch(()=>{});
+  }
+});
+
+document.getElementById('btn-add-pregresso').addEventListener('click', ()=>{
+  pregressoEditingId = null;
+  pregressoFormOpen = !pregressoFormOpen;
+  renderPregressoSection();
+});
+
+function renderPregressoForm(){
+  const wrap = document.getElementById('pregresso-form-wrap');
+  if(!pregressoFormOpen){ wrap.innerHTML=''; return; }
+  const editing = pregressoEditingId ? settings.pregressi[pregressoEditingId] : null;
+  wrap.innerHTML = `<div class="inline-form">
+    <div class="row">
+      <div class="field">
+        <label>Persona</label>
+        <select id="pg-person">${people.map(p=>`<option value="${p.id}" ${pregressoEditingId===p.id?'selected':''}>${p.name}</option>`).join('')}</select>
+      </div>
+      <div class="field">
+        <label>Tipo</label>
+        <select id="pg-type">
+          <option value="debito" ${editing && editing.amount>=0 ? 'selected':''}>Debito</option>
+          <option value="credito" ${editing && editing.amount<0 ? 'selected':''}>Credito</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Importo (€)</label>
+        <input type="number" id="pg-amount" step="0.01" min="0" value="${editing ? Math.abs(editing.amount) : ''}">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:2">
+        <label>Nota (opzionale)</label>
+        <input type="text" id="pg-note" value="${editing && editing.note ? editing.note.replace(/"/g,'&quot;') : ''}" placeholder="es. debito precedente all'utilizzo dell'app">
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn small" id="btn-save-pregresso">Salva</button>
+      <button class="btn secondary small" id="btn-cancel-pregresso">Annulla</button>
+    </div>
+  </div>`;
+  document.getElementById('btn-save-pregresso').onclick = async ()=>{
+    const personId = document.getElementById('pg-person').value;
+    const type = document.getElementById('pg-type').value;
+    const amount = parseFloat(document.getElementById('pg-amount').value);
+    const note = document.getElementById('pg-note').value.trim();
+    if(!amount || amount<=0){ showToast('Inserisci un importo valido'); return; }
+    if(!settings.pregressi) settings.pregressi = {};
+    settings.pregressi[personId] = {amount: type==='debito' ? amount : -amount, note};
+    await saveSettings();
+    pregressoFormOpen = false; pregressoEditingId = null;
+    renderSettle(); renderOverall();
+    showToast('Posizione pregressa salvata');
+  };
+  document.getElementById('btn-cancel-pregresso').onclick = ()=>{
+    pregressoFormOpen = false; pregressoEditingId = null; renderPregressoSection();
+  };
+}
+
+function renderPregressoSection(){
+  renderPregressoForm();
+  const wrap = document.getElementById('pregresso-rows');
+  wrap.innerHTML = people.map(p=>{
+    const entry = settings.pregressi && settings.pregressi[p.id];
+    const pregLine = entry && Math.abs(entry.amount)>=0.005
+      ? `<span class="pregresso-badge ${entry.amount>0?'debito':'credito'}">${entry.amount>0?'Debito':'Credito'} pregresso ${fmtEUR(Math.abs(entry.amount))}</span>`
+      : '<span style="font-size:12px;color:var(--ink-soft)">nessuna posizione pregressa</span>';
+    return `<div class="pregresso-card">
+      <div class="who">${p.name} ${pregLine}</div>
+      ${entry && entry.note ? `<div class="breakdown-line">Nota: ${entry.note}</div>` : ''}
+      <div class="row" style="margin-top:8px">
+        <button class="btn secondary tiny" data-pg-edit="${p.id}">Modifica pregresso</button>
+        ${entry ? `<button class="btn danger tiny" data-pg-del="${p.id}">Elimina/Azzera</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('[data-pg-edit]').forEach(b=>{
+    b.onclick = ()=>{ pregressoEditingId = b.dataset.pgEdit; pregressoFormOpen = true; renderPregressoForm(); };
+  });
+  wrap.querySelectorAll('[data-pg-del]').forEach(b=>{
+    b.onclick = async ()=>{
+      delete settings.pregressi[b.dataset.pgDel];
+      await saveSettings();
+      renderSettle(); renderOverall();
+      showToast('Posizione pregressa azzerata');
+    };
+  });
+}
+
+// ---------- SITUAZIONE COMPLESSIVA ----------
+function renderOverall(){
+  const items = movements.slice();
+  const r = computeSettlementFull(items, pregressiSignedMap(), true);
+  const expenseItems = items.filter(i=>i.type==='expense');
+  const incomeItems = items.filter(i=>i.type==='income');
+
+  const accCC = computeAccount('famiglia');
+  const accCash = computeAccount('contanti_casa');
+
+  document.getElementById('overall-stats').innerHTML = `
+    <div class="stat"><div class="label">Spesa totale registrata</div><div class="value">${fmtEUR(r.total)}</div></div>
+    <div class="stat clickable-stat" id="overall-acc-famiglia">
+      <div class="label">Conto Famiglia CC</div>
+      <div class="value">${fmtEUR(accCC.saldo)}</div>
+      <div style="font-size:11px;color:var(--ink-soft);margin-top:2px">entrate ${fmtEUR(accCC.entrate)} · uscite ${fmtEUR(accCC.uscite)}</div>
+    </div>
+    <div class="stat clickable-stat" id="overall-acc-cash">
+      <div class="label">Conto Famiglia Contanti</div>
+      <div class="value">${fmtEUR(accCash.saldo)}</div>
+      <div style="font-size:11px;color:var(--ink-soft);margin-top:2px">entrate ${fmtEUR(accCash.entrate)} · uscite ${fmtEUR(accCash.uscite)}</div>
+    </div>
+  `;
+  document.getElementById('overall-acc-famiglia').addEventListener('click', ()=>{
+    overallAccountExpanded.famiglia = !overallAccountExpanded.famiglia;
+    renderOverall();
+  });
+  document.getElementById('overall-acc-cash').addEventListener('click', ()=>{
+    overallAccountExpanded.contanti_casa = !overallAccountExpanded.contanti_casa;
+    renderOverall();
+  });
+
+  let accHtml = '';
+  if(overallAccountExpanded.famiglia){
+    accHtml += `<div class="card"><h2>Movimenti — Conto Famiglia CC</h2>${renderAccountMovementsTable(accCC)}</div>`;
+  }
+  if(overallAccountExpanded.contanti_casa){
+    accHtml += `<div class="card"><h2>Movimenti — Conto Famiglia Contanti</h2>${renderAccountMovementsTable(accCash)}</div>`;
+  }
+  document.getElementById('overall-account-detail-wrap').innerHTML = accHtml;
+
+  const rowsWrap = document.getElementById('overall-rows');
+  if(movements.length===0){
+    rowsWrap.innerHTML = '<div class="empty">Nessun movimento registrato finora.</div>';
+    return;
+  }
+  rowsWrap.innerHTML = people.map(p=>{
+    if(p.id==='p4' && Math.abs(r.owed.p4)<0.005 && Math.abs(r.paidPersonal.p4)<0.005 && Math.abs(r.conguagliVersati.p4||0)<0.005 && Math.abs(r.anticipatiVersati.p4||0)<0.005 && Math.abs(r.altroEntrate.p4||0)<0.005 && Math.abs(r.rataMensileVersata.p4||0)<0.005) return '';
+    const n = r.saldoFinale[p.id];
+    let cls='zero', text='In pari';
+    if(n > 0.01){ cls='debit'; text='Deve versare'; }
+    else if(n < -0.01){ cls='credit'; text='È a credito'; }
+    const isOpen = !!overallExpanded[p.id];
+    const pregressoVal = r.pregressi[p.id]||0;
+    const pregressoStr = Math.abs(pregressoVal)<0.005 ? '' : (pregressoVal>0 ? ` · posizione pregressa: debito ${fmtEUR(pregressoVal)}` : ` · posizione pregressa: credito ${fmtEUR(-pregressoVal)}`);
+    return `<div class="settle-item">
+      <div class="settle-row clickable ${cls}" data-person-overall="${p.id}">
+        <div>
+          <div class="who">${p.name}<span class="caret">${isOpen?'▲':'▼'}</span></div>
+          <div class="detail">quota complessiva: ${fmtEUR(r.owed[p.id])} · pagato personalmente: ${fmtEUR(r.paidPersonal[p.id])} · debito teorico: ${fmtEUR(r.debitoTeorico[p.id])} · conguagli versati: ${fmtEUR(r.conguagliVersati[p.id]||0)} · anticipati versati: ${fmtEUR(r.anticipatiVersati[p.id]||0)} · rata mensile versata: ${fmtEUR(r.rataMensileVersata[p.id]||0)}${pregressoStr}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="detail">${text}</div>
+          <div class="amount">${fmtEUR(Math.abs(n))}</div>
+        </div>
+      </div>
+      ${isOpen ? `<div class="person-detail-wrap">
+        <div style="font-weight:600;font-size:13px;margin:6px 0 4px;color:var(--ledger)">Spese / quota</div>
+        ${renderPersonDetailTable(expenseItems, p.id)}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Conguagli versati (riducono il debito accumulato)</div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Conguaglio')}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Anticipati versati (riducono il debito / generano credito per l'eccedenza)</div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Anticipati')}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Rata mensile versata (contributo alle spese di casa)</div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Rata mensile')}
+        <div style="font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--ledger)">Altro <span style="font-weight:400;color:var(--ink-soft)">(guadagno puro della casa, nessun effetto sulla posizione individuale)</span></div>
+        ${renderPersonConguagliTable(incomeItems, p.id, 'Altro')}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+  rowsWrap.querySelectorAll('[data-person-overall]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      overallExpanded[el.dataset.personOverall] = !overallExpanded[el.dataset.personOverall];
+      renderOverall();
+    });
+  });
+  attachEditButtons();
+  renderPregressoSection();
+}
+
+// ---------- ACCOUNTS TAB ----------
+function renderAccounts(){
+  document.getElementById('acc-cc-initial-input').value = settings.initialFamigliaCC || 0;
+  document.getElementById('acc-cash-initial-input').value = settings.initialContantiCasa || 0;
+  const accCC = computeAccount('famiglia');
+  const accCash = computeAccount('contanti_casa');
+  document.getElementById('acc-cc-body').innerHTML = accountViewMode.famiglia==='mensile' ? renderAccountMonthlyView(accCC) : renderAccountMovementsTable(accCC);
+  document.getElementById('acc-cash-body').innerHTML = accountViewMode.contanti_casa==='mensile' ? renderAccountMonthlyView(accCash) : renderAccountMovementsTable(accCash);
+  document.querySelectorAll('[data-acc-toggle]').forEach(tg=>{
+    const accId = tg.dataset.accToggle;
+    tg.querySelectorAll('button').forEach(b=>{
+      b.classList.toggle('active', accountViewMode[accId]===b.dataset.mode);
+      b.onclick = ()=>{ accountViewMode[accId] = b.dataset.mode; renderAccounts(); };
+    });
+  });
+  attachEditButtons();
+}
+
+document.getElementById('btn-save-cc-initial').addEventListener('click', async ()=>{
+  settings.initialFamigliaCC = parseFloat(document.getElementById('acc-cc-initial-input').value) || 0;
+  await saveSettings();
+  renderAccounts();
+  renderOverall();
+  showToast('Saldo iniziale Conto Famiglia CC aggiornato');
+});
+document.getElementById('btn-save-cash-initial').addEventListener('click', async ()=>{
+  settings.initialContantiCasa = parseFloat(document.getElementById('acc-cash-initial-input').value) || 0;
+  await saveSettings();
+  renderAccounts();
+  renderOverall();
+  showToast('Saldo iniziale Conto Famiglia Contanti aggiornato');
+});
+
+// ---------- SETTINGS TAB ----------
+function renderSettingsPeople(){
+  const wrap = document.getElementById('people-editor');
+  wrap.innerHTML = people.map((p,i)=>`
+    <div class="p-row">
+      <input type="text" data-name-idx="${i}" value="${p.name}">
+      <input type="number" data-quota-idx="${i}" value="${p.quota}" ${i===3?'disabled title="quota fissa non applicabile"':''}>
+      <span style="font-size:12px;color:var(--ink-soft)">${i<3?'% quota':'esterno'}</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('btn-save-people').addEventListener('click', async ()=>{
+  document.querySelectorAll('[data-name-idx]').forEach(el=>{
+    people[parseInt(el.dataset.nameIdx)].name = el.value.trim() || people[parseInt(el.dataset.nameIdx)].name;
+  });
+  document.querySelectorAll('[data-quota-idx]').forEach(el=>{
+    people[parseInt(el.dataset.quotaIdx)].quota = parseFloat(el.value)||0;
+  });
+  await saveSettings();
+  showToast('Persone aggiornate');
+  initAddForm();
+});
+
+document.getElementById('btn-reset').addEventListener('click', async ()=>{
+  if(confirm('Sei sicuro di voler cancellare tutti i movimenti (spese ed entrate) registrati? Non si può annullare.')){
+    movements = [];
+    settleExpanded = {};
+    overallExpanded = {};
+    overallAccountExpanded = {famiglia:false, contanti_casa:false};
+    await saveMovements();
+    renderList();
+    renderSettle();
+    renderOverall();
+    renderAccounts();
+    showToast('Tutti i movimenti sono stati cancellati');
+  }
+});
+
+// ---------- EXPORT CSV & XLSX (UNICO FILE) ----------
+function csvEscape(v){
+  const s = (v===undefined||v===null) ? '' : String(v);
+  return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function toCSV(rows){
+  return rows.map(r=>r.map(csvEscape).join(';')).join('\r\n');
+}
+function downloadExportFile(filename, content, mimeType) {
+  const blob = new Blob(['\uFEFF'+content], {type: mimeType});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+function exportCSVAllInOne(){
+  const payerMap = Object.fromEntries(payerAccountOptions().map(a=>[a.id,a.label]));
+  const destMap = Object.fromEntries(incomeDestAccounts().map(a=>[a.id,a.label]));
+  const rows = [];
+
+  rows.push(['--- MOVIMENTI ---']);
+  rows.push(['Data','Tipo','Categoria','Descrizione','Importo','Pagato da / Destinazione','Versato da','Suddivisione']);
+  movements.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(m=>{
+    if(m.type==='expense'){
+      const split = Object.entries(m.splitValues||{}).filter(([k,v])=>v>0).map(([k,v])=>{
+        const p = people.find(pp=>pp.id===k); return (p?p.name:k)+' '+v+'%';
+      }).join(', ');
+      rows.push([m.date,'Spesa',m.category,m.desc||'',m.amount.toFixed(2),payerMap[m.paidBy]||m.paidBy,'',split]);
+    } else {
+      rows.push([m.date,'Entrata',m.category,m.desc||'',m.amount.toFixed(2),destMap[m.destAccount]||m.destAccount,m.person||'','']);
+    }
+  });
+
+  rows.push([''],['--- SITUAZIONE PERSONE ---']);
+  const r = computeSettlementFull(movements, pregressiSignedMap(), true);
+  rows.push(['Persona','Debito Pregresso','Quota','Pagato','Debito Teorico','Conguagli','Anticipati','Rata Mensile','Saldo Finale','Stato']);
+  people.forEach(p=>{
+    const n = r.saldoFinale[p.id];
+    rows.push([p.name, (r.pregressi[p.id]||0).toFixed(2), r.owed[p.id].toFixed(2), r.paidPersonal[p.id].toFixed(2), r.debitoTeorico[p.id].toFixed(2), (r.conguagliVersati[p.id]||0).toFixed(2), (r.anticipatiVersati[p.id]||0).toFixed(2), (r.rataMensileVersata[p.id]||0).toFixed(2), n.toFixed(2), Math.abs(n)<0.01 ? 'In pari' : (n>0 ? 'Debitore' : 'Creditore')]);
+  });
+
+  rows.push([''],['--- CONTO FAMIGLIA CC ---']);
+  const accCC = computeAccount('famiglia');
+  rows.push(['Data','Tipo','Categoria','Descrizione','Importo','Saldo Progressivo']);
+  accCC.rows.forEach(m=>rows.push([m.date, m.type==='income'?'Entrata':'Spesa', m.category, m.desc||'', m.amount.toFixed(2), m.saldoProgressivo.toFixed(2)]));
+
+  rows.push([''],['--- CONTO FAMIGLIA CONTANTI ---']);
+  const accCash = computeAccount('contanti_casa');
+  rows.push(['Data','Tipo','Categoria','Descrizione','Importo','Saldo Progressivo']);
+  accCash.rows.forEach(m=>rows.push([m.date, m.type==='income'?'Entrata':'Spesa', m.category, m.desc||'', m.amount.toFixed(2), m.saldoProgressivo.toFixed(2)]));
+
+  downloadExportFile('conti_di_casa_completo.csv', toCSV(rows), 'text/csv;charset=utf-8;');
+  showToast('Scaricato 1 unico file CSV');
+}
+
+function exportXLSXMultiSheet(){
+  const payerMap = Object.fromEntries(payerAccountOptions().map(a=>[a.id,a.label]));
+  const destMap = Object.fromEntries(incomeDestAccounts().map(a=>[a.id,a.label]));
+  const r = computeSettlementFull(movements, pregressiSignedMap(), true);
+  const accCC = computeAccount('famiglia');
+  const accCash = computeAccount('contanti_casa');
+
+  let xml = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+  
+  function xmlCells(arr) {
+    return arr.map(v => `<Cell><Data ss:Type="${typeof v === 'number' ? 'Number' : 'String'}">${String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</Data></Cell>`).join('');
+  }
+
+  xml += '<Worksheet ss:Name="Movimenti"><Table>';
+  xml += `<Row>${xmlCells(['Data','Tipo','Categoria','Descrizione','Importo','Pagato da / Destinazione','Versato da','Suddivisione'])}</Row>`;
+  movements.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(m => {
+    let extra = m.type==='expense' ? (payerMap[m.paidBy]||m.paidBy) : (destMap[m.destAccount]||m.destAccount);
+    let split = m.type==='expense' ? Object.entries(m.splitValues||{}).filter(([k,v])=>v>0).map(([k,v])=> {
+      const p = people.find(pp=>pp.id===k); return (p?p.name:k)+' '+v+'%';
+    }).join(', ') : '';
+    xml += `<Row>${xmlCells([m.date, m.type, m.category, m.desc||'', m.amount, extra, m.person||'', split])}</Row>`;
+  });
+  xml += '</Table></Worksheet>';
+
+  xml += '<Worksheet ss:Name="Situazione Persone"><Table>';
+  xml += `<Row>${xmlCells(['Persona','Debito Pregresso','Quota','Pagato','Debito Teorico','Conguagli','Anticipati','Rata Mensile','Saldo Finale','Stato'])}</Row>`;
+  people.forEach(p => {
+    const n = r.saldoFinale[p.id];
+    xml += `<Row>${xmlCells([p.name, r.pregressi[p.id]||0, r.owed[p.id], r.paidPersonal[p.id], r.debitoTeorico[p.id], r.conguagliVersati[p.id]||0, r.anticipatiVersati[p.id]||0, r.rataMensileVersata[p.id]||0, n, Math.abs(n)<0.01 ? 'In pari' : (n>0 ? 'Debitore' : 'Creditore')])}</Row>`;
+  });
+  xml += '</Table></Worksheet>';
+
+  xml += '<Worksheet ss:Name="Conto Famiglia CC"><Table>';
+  xml += `<Row>${xmlCells(['Data','Tipo','Categoria','Descrizione','Importo','Saldo Progressivo'])}</Row>`;
+  accCC.rows.forEach(m => {
+    xml += `<Row>${xmlCells([m.date, m.type, m.category, m.desc||'', m.amount, m.saldoProgressivo])}</Row>`;
+  });
+  xml += '</Table></Worksheet>';
+
+  xml += '<Worksheet ss:Name="Conto Contanti"><Table>';
+  xml += `<Row>${xmlCells(['Data','Tipo','Categoria','Descrizione','Importo','Saldo Progressivo'])}</Row>`;
+  accCash.rows.forEach(m => {
+    xml += `<Row>${xmlCells([m.date, m.type, m.category, m.desc||'', m.amount, m.saldoProgressivo])}</Row>`;
+  });
+  xml += '</Table></Worksheet>';
+
+  xml += '</Workbook>';
+  downloadExportFile('conti_di_casa_completo.xls', xml, 'application/vnd.ms-excel');
+  showToast('Scaricato file Excel multi-foglio');
+}
+
+document.getElementById('btn-export-csv').addEventListener('click', exportCSVAllInOne);
+document.getElementById('btn-export-xlsx').addEventListener('click', exportXLSXMultiSheet);
+
+// ---------- INIT ----------
+(async function init(){
+  await loadAll();
+  attachAddFormListenersOnce();
+  initAddForm();
+  renderSettingsPeople();
+  renderPregressoSection();
+})();
+</script>
 </body>
 </html>
